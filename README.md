@@ -1,1 +1,1 @@
-# VgaPong
+# VGA Pong
