@@ -6,9 +6,6 @@
 --!
 --! @file Manager.vhd
 --!
---! Copyright (c) 2020 Cosylab d.d.
---! This software is distributed under the terms found
---! in file LICENSE.txt that is included with this distribution.
 ---------------------------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
@@ -16,7 +13,6 @@ use ieee.numeric_std.all;
 use ieee.math_real.all;
 library surf;
 use surf.StdRtlPkg.all;
-
 use work.MarkDebugPkg.all;
 
 entity Manager is
