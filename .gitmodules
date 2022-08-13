@@ -1,6 +1,6 @@
 [submodule "submodules/surf"]
 	path = submodules/surf
-	url = https://github.com/slaclab/surf.git
+	url = git@github.com:rbrglez/surf.git
 [submodule "submodules/ruckus"]
 	path = submodules/ruckus
-	url = https://github.com/slaclab/ruckus.git
+	url = git@github.com:rbrglez/ruckus.git
