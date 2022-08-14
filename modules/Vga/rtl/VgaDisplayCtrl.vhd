@@ -73,10 +73,39 @@ begin
             unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea
          ) then
 
-         v.red   := x"F";
-         v.blue  := x"D";
-         v.green := x"4";
+         -- 1 quad
+         if(
+               unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea / 2 and
+               unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea / 2
+            ) then
+            v.red   := x"F";
+            v.green := x"D";
+            v.blue  := x"4";
 
+         -- 2 quad
+         elsif (
+               unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea and
+               unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea / 2
+            ) then
+            v.red   := x"F";
+            v.green := x"4";
+            v.blue  := x"D";
+
+         -- 3 quad
+         elsif (
+               unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea / 2 and
+               unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea
+            ) then
+            v.red   := x"4";
+            v.green := x"D";
+            v.blue  := x"F";
+
+         -- 4 quad
+         else
+            v.red   := x"D";
+            v.green := x"F";
+            v.blue  := x"4";
+         end if;
       else
          v.red   := (others => '0');
          v.green := (others => '0');
