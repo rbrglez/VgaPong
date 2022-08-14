@@ -4,7 +4,7 @@
 --!
 --! @author 
 --!
---! @file Arty.vhd
+--! @file ArtyTestLeds.vhd
 --!
 ---------------------------------------------------------------------------------------------------
 library ieee;
@@ -18,7 +18,7 @@ use work.MarkDebugPkg.all;
 library UNISIM;
 use UNISIM.VComponents.all;
 
-entity Arty is
+entity ArtyTestLeds is
    generic (
       TPD_G           : time     := 1 ns;
       DEBOUNCE_TIME_G : positive := 5000000 --50 ms debounce time
@@ -51,9 +51,9 @@ entity Arty is
       sw : in slv(3 downto 0)
 
    );
-end Arty;
+end ArtyTestLeds;
 ---------------------------------------------------------------------------------------------------    
-architecture rtl of Arty is
+architecture rtl of ArtyTestLeds is
 
    signal Manager_rgbLeds : slv(12 - 1 downto 0);
    signal Io_rgbLeds      : slv(12 - 1 downto 0);
