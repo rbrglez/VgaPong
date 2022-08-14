@@ -27,16 +27,19 @@ architecture rtl of VgaSyncCtrlTb is
    constant RST_DELAY_C : time := 100 ns;
    constant RST_HOLD_C  : time := 100 ns;
 
-   constant VGA_TYPE_C : VgaType := VESA_640x480_AT_75HZ_C;
+   constant VGA_C : VgaType := VESA_640x480_AT_75HZ_C;
 
-   signal clk : sl;
-   signal rst : sl;
+   signal clk_i : sl;
+   signal rst_i : sl;
+   signal en_i  : sl;
 
-   signal hsync_o  : sl;
-   signal vsync_o  : sl;
-   signal column_o : slv(bitSize(VGA_TYPE_C.horizontalTiming.whole) - 1 downto 0);
-   signal row_o    : slv(bitSize(VGA_TYPE_C.verticalTiming.whole) - 1 downto 0);
+   signal hsync_o    : sl;
+   signal hvisible_o : sl;
+   signal hcnt_o     : slv(bitSize(VGA_C.horizontalTiming.whole) - 1 downto 0);
 
+   signal vsync_o    : sl;
+   signal vvisible_o : sl;
+   signal vcnt_o     : slv(bitSize(VGA_C.verticalTiming.whole) - 1 downto 0);
 ---------------------------------------------------------------------------------------------------
 begin
 
@@ -45,16 +48,21 @@ begin
    -----------------------------------------------------------------------------
    uut_VgaSyncCtrl : entity work.VgaSyncCtrl
       generic map (
-         TPD_G      => TPD_C,
-         VGA_TYPE_G => VGA_TYPE_C
+         TPD_G => TPD_C,
+         VGA_G => VGA_C
       )
       port map (
-         clk_i    => clk,
-         rst_i    => rst,
-         hsync_o  => hsync_o,
-         vsync_o  => vsync_o,
-         column_o => column_o,
-         row_o    => row_o
+         clk_i => clk_i,
+         rst_i => rst_i,
+         en_i => en_i,
+
+         hsync_o    => hsync_o,
+         hvisible_o => hvisible_o,
+         hcnt_o     => hcnt_o,
+
+         vsync_o    => vsync_o,
+         vvisible_o => vvisible_o,
+         vcnt_o     => vcnt_o
       );
 
    -----------------------------------------------------------------------------
@@ -67,9 +75,24 @@ begin
          RST_HOLD_TIME_G   => RST_HOLD_C
       )
       port map (
-         clkP => clk,
-         rst  => rst
+         clkP => clk_i,
+         rst  => rst_i
       );
+
+   -----------------------------------------------------------------------------
+   -- Simulation process
+   -----------------------------------------------------------------------------
+   p_Sim : process
+   begin
+
+      en_i <= '0';
+      wait for 1_000 * T_C;
+      en_i <= '1';
+
+      wait for 3_000_000 * T_C;
+      assert false report "Simulation Passed!" severity failure;
+
+   end process p_Sim;
 
 end rtl;
 ---------------------------------------------------------------------------------------------------
