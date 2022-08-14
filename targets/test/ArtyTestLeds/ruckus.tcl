@@ -12,4 +12,3 @@ loadConstraints  -dir  "$::DIR_PATH/src/"
 # Load modules
 loadRuckusTcl "$::env(TOP_DIR)/modules/Io"
 loadRuckusTcl "$::env(TOP_DIR)/modules/Manager"
-loadRuckusTcl "$::env(TOP_DIR)/modules/Vga"
