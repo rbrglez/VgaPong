@@ -27,6 +27,11 @@ entity VgaDisplayCtrl is
       rst_i : in sl;
       en_i  : in sl;
 
+      vPaddlePos_i : in slv(bitSize(VGA_G.verticalTiming.whole) - 1 downto 0);
+
+      vBallPos_i : in slv(bitSize(VGA_G.verticalTiming.whole) - 1 downto 0);
+      hBallPos_i : in slv(bitSize(VGA_G.horizontalTiming.whole) - 1 downto 0);
+
       hcnt_i : in slv(bitSize(VGA_G.horizontalTiming.whole) - 1 downto 0);
       vcnt_i : in slv(bitSize(VGA_G.verticalTiming.whole) - 1 downto 0);
 
@@ -39,6 +44,18 @@ entity VgaDisplayCtrl is
 end VgaDisplayCtrl;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of VgaDisplayCtrl is
+
+   constant BORDER_WIDTH_C : natural := 8;
+
+   constant PADDLE_LEFT_C   : natural := 28;
+   constant PADDLE_RIGHT_C  : natural := PADDLE_LEFT_C + 8;
+   constant PADDLE_TOP_C    : natural := 100;
+   constant PADDLE_BOTTOM_C : natural := PADDLE_TOP_C + 64;
+
+   constant BALL_LEFT_C   : natural := 300;
+   constant BALL_RIGHT_C  : natural := BALL_LEFT_C + 8;
+   constant BALL_TOP_C    : natural := 300;
+   constant BALL_BOTTOM_C : natural := BALL_TOP_C + 8;
 
 
    type RegType is record
@@ -73,39 +90,90 @@ begin
             unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea
          ) then
 
-         -- 1 quad
-         if(
-               unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea / 2 and
-               unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea / 2
+
+         -----------------------------------------------------------------------
+         -- BORDER
+         -----------------------------------------------------------------------
+         if (
+               unsigned(vcnt_i) < BORDER_WIDTH_C or                                    -- top border
+               unsigned(vcnt_i) > VGA_G.verticalTiming.visibleArea - BORDER_WIDTH_C or -- bottom border
+               unsigned(hcnt_i) > VGA_G.horizontalTiming.visibleArea - BORDER_WIDTH_C  -- right border
             ) then
+
             v.red   := x"F";
             v.green := x"D";
             v.blue  := x"4";
 
-         -- 2 quad
          elsif (
-               unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea and
-               unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea / 2
+               unsigned(hcnt_i) > PADDLE_LEFT_C and           -- left paddle border
+               unsigned(hcnt_i) < PADDLE_RIGHT_C and          -- right paddle border
+               unsigned(vcnt_i) > unsigned(vPaddlePos_i) and  -- top paddle border
+               unsigned(vcnt_i) < unsigned(vPaddlePos_i) + 64 -- bottom paddle border
             ) then
-            v.red   := x"F";
-            v.green := x"4";
-            v.blue  := x"D";
+            -- paddle
 
-         -- 3 quad
-         elsif (
-               unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea / 2 and
-               unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea
-            ) then
             v.red   := x"4";
             v.green := x"D";
             v.blue  := x"F";
 
-         -- 4 quad
-         else
+         elsif (
+               unsigned(hcnt_i) > unsigned(hBallPos_i) and     -- left paddle border
+               unsigned(hcnt_i) < unsigned(hBallPos_i) + 8 and -- right paddle border
+               unsigned(vcnt_i) > unsigned(vBallPos_i) and     -- top paddle border
+               unsigned(vcnt_i) < unsigned(vBallPos_i) + 8     -- bottom paddle border
+            ) then
+            -- ball
+
             v.red   := x"D";
             v.green := x"F";
             v.blue  := x"4";
+
+         else
+            -- background
+            v.red   := x"F";
+            v.green := x"4";
+            v.blue  := x"D";
+
          end if;
+
+
+         /*
+
+         -- 1 quad
+         if(
+            unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea / 2 and
+            unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea / 2
+         ) then
+         v.red   := x"F";
+         v.green := x"D";
+         v.blue  := x"4";
+
+         -- 2 quad
+         elsif (
+            unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea and
+            unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea / 2
+         ) then
+         v.red   := x"F";
+         v.green := x"4";
+         v.blue  := x"D";
+
+         -- 3 quad
+         elsif (
+            unsigned(hcnt_i) < VGA_G.horizontalTiming.visibleArea / 2 and
+            unsigned(vcnt_i) < VGA_G.verticalTiming.visibleArea
+         ) then
+         v.red   := x"4";
+         v.green := x"D";
+         v.blue  := x"F";
+
+         -- 4 quad
+         else
+         v.red   := x"D";
+         v.green := x"F";
+         v.blue  := x"4";
+         end if;
+         */
+
       else
          v.red   := (others => '0');
          v.green := (others => '0');
