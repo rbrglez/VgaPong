@@ -27,19 +27,22 @@ architecture rtl of VgaSyncCtrlTb is
    constant RST_DELAY_C : time := 100 ns;
    constant RST_HOLD_C  : time := 100 ns;
 
-   constant VGA_C : VgaType := VESA_640x480_AT_75HZ_C;
+   constant CNT_WIDTH_C : natural := 32;
 
    signal clk_i : sl;
    signal rst_i : sl;
    signal en_i  : sl;
 
+   signal updVga_i      : sl;
+   signal vgaSettings_i : VgaSettingsType;
+
    signal hsync_o    : sl;
    signal hvisible_o : sl;
-   signal hcnt_o     : slv(bitSize(VGA_C.horizontalTiming.whole) - 1 downto 0);
+   signal hcnt_o     : slv(CNT_WIDTH_C - 1 downto 0);
 
    signal vsync_o    : sl;
    signal vvisible_o : sl;
-   signal vcnt_o     : slv(bitSize(VGA_C.verticalTiming.whole) - 1 downto 0);
+   signal vcnt_o     : slv(CNT_WIDTH_C - 1 downto 0);
 ---------------------------------------------------------------------------------------------------
 begin
 
@@ -48,13 +51,16 @@ begin
    -----------------------------------------------------------------------------
    uut_VgaSyncCtrl : entity work.VgaSyncCtrl
       generic map (
-         TPD_G => TPD_C,
-         VGA_G => VGA_C
+         TPD_G       => TPD_C,
+         CNT_WIDTH_G => CNT_WIDTH_C
       )
       port map (
          clk_i => clk_i,
          rst_i => rst_i,
-         en_i => en_i,
+         en_i  => en_i,
+
+         updVga_i      => updVga_i,
+         vgaSettings_i => vgaSettings_i,
 
          hsync_o    => hsync_o,
          hvisible_o => hvisible_o,
@@ -85,11 +91,52 @@ begin
    p_Sim : process
    begin
 
+      updVga_i      <= '0';
+      vgaSettings_i <= VESA_640x480_AT_75HZ_C;
+      en_i          <= '0';
+
+      wait until rst_i = '1';
+      wait until rst_i = '0';
+
+      wait for 10 * T_C;
+      wait for TPD_C;
+
+      updVga_i      <= '1';
+      vgaSettings_i <= VESA_640x480_AT_75HZ_C;
+
+      wait for T_C;
+      wait for TPD_C;
+
+      updVga_i <= '0';
+
       en_i <= '0';
       wait for 1_000 * T_C;
       en_i <= '1';
 
-      wait for 3_000_000 * T_C;
+      for I in 0 to 5 - 1 loop
+
+         wait until vsync_o = '0';
+         wait until vsync_o = '1';
+
+      end loop;
+
+
+      updVga_i      <= '1';
+      vgaSettings_i <= VESA_640x350_AT_85HZ_C;
+
+      wait for T_C;
+      wait for TPD_C;
+
+      updVga_i <= '0';
+
+      for I in 0 to 5 - 1 loop
+
+         wait until vsync_o = '0';
+         wait until vsync_o = '1';
+
+      end loop;
+
+
       assert false report "Simulation Passed!" severity failure;
 
    end process p_Sim;

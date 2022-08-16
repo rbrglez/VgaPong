@@ -19,21 +19,24 @@ use work.VgaPkg.all;
 
 entity VgaSyncCtrl is
    generic (
-      TPD_G : time    := 1 ns;
-      VGA_G : VgaType := VESA_640x480_AT_75HZ_C
+      TPD_G       : time    := 1 ns;
+      CNT_WIDTH_G : natural := 32
    );
    port (
       clk_i : in sl;
       rst_i : in sl;
       en_i  : in sl;
+      -- Vga settings
+      updVga_i      : in sl;
+      vgaSettings_i : in VgaSettingsType;
       -- horizontal
       hsync_o    : out sl;
       hvisible_o : out sl;
-      hcnt_o     : out slv(bitSize(VGA_G.horizontalTiming.whole) - 1 downto 0);
+      hcnt_o     : out slv(CNT_WIDTH_G - 1 downto 0);
       -- vertical
       vsync_o    : out sl;
       vvisible_o : out sl;
-      vcnt_o     : out slv(bitSize(VGA_G.verticalTiming.whole) - 1 downto 0)
+      vcnt_o     : out slv(CNT_WIDTH_G - 1 downto 0)
    );
 end VgaSyncCtrl;
 ---------------------------------------------------------------------------------------------------
@@ -46,14 +49,19 @@ begin
 
    u_HorizontalSync : entity work.VgaSyncFsm
       generic map (
-         TPD_G        => TPD_G,
-         VGA_TIMING_G => VGA_G.horizontalTiming
+         TPD_G       => TPD_G,
+         CNT_WIDTH_G => CNT_WIDTH_G
       )
       port map (
-         clk_i     => clk_i,
-         rst_i     => rst_i,
-         cntEn_i   => en_i,
-         cntEn_o   => h2vCntEn,
+         clk_i => clk_i,
+         rst_i => rst_i,
+
+         updVga_i    => updVga_i,
+         vgaTiming_i => vgaSettings_i.horizontalTiming,
+
+         cntEn_i => en_i,
+         cntEn_o => h2vCntEn,
+
          cnt_o     => hcnt_o,
          visible_o => hvisible_o,
          sync_o    => hsync_o
@@ -61,14 +69,19 @@ begin
 
    u_VerticalSync : entity work.VgaSyncFsm
       generic map (
-         TPD_G        => TPD_G,
-         VGA_TIMING_G => VGA_G.verticalTiming
+         TPD_G       => TPD_G,
+         CNT_WIDTH_G => CNT_WIDTH_G
       )
       port map (
-         clk_i     => clk_i,
-         rst_i     => rst_i,
-         cntEn_i   => h2vCntEn,
-         cntEn_o   => open,
+         clk_i => clk_i,
+         rst_i => rst_i,
+
+         updVga_i    => updVga_i,
+         vgaTiming_i => vgaSettings_i.verticalTiming,
+
+         cntEn_i => h2vCntEn,
+         cntEn_o => open,
+
          cnt_o     => vcnt_o,
          visible_o => vvisible_o,
          sync_o    => vsync_o

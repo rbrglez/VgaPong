@@ -19,17 +19,20 @@ use work.VgaPkg.all;
 
 entity VgaSyncFsm is
    generic (
-      TPD_G        : time := 1 ns;
-      VGA_TIMING_G : VgaTimingType
+      TPD_G       : time    := 1 ns;
+      CNT_WIDTH_G : natural := 32
    );
    port (
       clk_i : in sl;
       rst_i : in sl;
 
+      updVga_i    : in sl;
+      vgaTiming_i : in VgaTimingType;
+
       cntEn_i : in  sl;
       cntEn_o : out sl;
 
-      cnt_o     : out slv(bitsize(VGA_TIMING_G.whole) - 1 downto 0);
+      cnt_o     : out slv(CNT_WIDTH_G - 1 downto 0);
       visible_o : out sl;
       sync_o    : out sl
    );
@@ -46,19 +49,23 @@ architecture rtl of VgaSyncFsm is
       );
 
    type RegType is record
-      cnt      : unsigned(bitSize(VGA_TIMING_G.whole) - 1 downto 0);
-      sync     : sl;
-      cntEnOut : sl;
-      visible  : sl;
+      cnt       : unsigned(cnt_o'range);
+      sync      : sl;
+      cntEnOut  : sl;
+      visible   : sl;
+      updVga    : sl;
+      vgaTiming : VgaTimingType;
       --
       state : StateType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
-         cnt      => (others => '0'),
-         sync     => '1',
-         cntEnOut => '0',
-         visible  => '0',
+         cnt       => (others => '0'),
+         sync      => '1',
+         cntEnOut  => '0',
+         visible   => '0',
+         updVga    => '0',
+         vgaTiming => VGA_TIMING_INIT_C,
          --
          state => VISIBLE_S
       );
@@ -78,6 +85,16 @@ begin
       -- Latch the current value
       v := r;
 
+      v.updVga := updVga_i;
+
+      -- Rising edge detector
+      if (updVga_i = '1' and r.updVga = '0') then
+         -- reset FSM
+         v := REG_INIT_C;
+         -- register new vga settings
+         v.vgaTiming := vgaTiming_i;
+      end if;
+
       v.cntEnOut := '0';
 
       -- NOTE: state machine is active if cntEn_i port is high
@@ -90,7 +107,9 @@ begin
             ----------------------------------------------------------------------
             when VISIBLE_S =>
                --
-               if (r.cnt = VGA_TIMING_G.visibleArea - 1) then
+               v.visible := '1';
+
+               if (r.cnt = unsigned(r.vgaTiming.visibleArea) - 1) then
                   v.visible := '0';
                   v.sync    := '1';
                   v.state   := FRONT_PORCH_S;
@@ -101,8 +120,8 @@ begin
 
                if (
                      r.cnt =
-                     VGA_TIMING_G.visibleArea +
-                     VGA_TIMING_G.frontPorch - 1
+                     unsigned(r.vgaTiming.visibleArea) +
+                     unsigned(r.vgaTiming.frontPorch) - 1
                   ) then
                   v.visible := '0';
                   v.sync    := '0';
@@ -115,9 +134,9 @@ begin
 
                if (
                      r.cnt =
-                     VGA_TIMING_G.visibleArea +
-                     VGA_TIMING_G.frontPorch +
-                     VGA_TIMING_G.syncPulse - 1
+                     unsigned(r.vgaTiming.visibleArea) +
+                     unsigned(r.vgaTiming.frontPorch) +
+                     unsigned(r.vgaTiming.syncPulse) - 1
                   ) then
                   v.visible := '0';
                   v.sync    := '1';
@@ -130,10 +149,10 @@ begin
 
                if (
                      r.cnt =
-                     VGA_TIMING_G.visibleArea +
-                     VGA_TIMING_G.frontPorch +
-                     VGA_TIMING_G.syncPulse +
-                     VGA_TIMING_G.backPorch - 1
+                     unsigned(r.vgaTiming.visibleArea) +
+                     unsigned(r.vgaTiming.frontPorch) +
+                     unsigned(r.vgaTiming.syncPulse) +
+                     unsigned(r.vgaTiming.backPorch) - 1
                   ) then
                   v.visible  := '1';
                   v.cnt      := to_unsigned(0, r.cnt'length);

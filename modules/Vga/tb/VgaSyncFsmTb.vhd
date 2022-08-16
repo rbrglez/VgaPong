@@ -27,20 +27,24 @@ architecture rtl of VgaSyncFsmTb is
    constant RST_DELAY_C : time := 100 ns;
    constant RST_HOLD_C  : time := 100 ns;
 
-   constant VGA_TYPE_C : VgaType := VESA_640x480_AT_75HZ_C;
+   constant CNT_WIDTH_C : natural := 32;
+
 
    signal clk_i : sl;
    signal rst_i : sl;
 
-   signal hinc_i     : sl;
-   signal hinc_o     : sl;
-   signal hcnt_o     : slv(bitsize(VGA_TYPE_C.horizontalTiming.whole) - 1 downto 0);
+   signal updVga_i      : sl;
+   signal vgaSettings_i : VgaSettingsType;
+
+   signal hcntEn_i   : sl;
+   signal hcntEn_o   : sl;
+   signal hcnt_o     : slv(CNT_WIDTH_C - 1 downto 0);
    signal hvisible_o : sl;
    signal hsync_o    : sl;
 
-   signal vinc_i     : sl;
-   signal vinc_o     : sl;
-   signal vcnt_o     : slv(bitsize(VGA_TYPE_C.verticalTiming.whole) - 1 downto 0);
+   signal vcntEn_i   : sl;
+   signal vcntEn_o   : sl;
+   signal vcnt_o     : slv(CNT_WIDTH_C - 1 downto 0);
    signal vvisible_o : sl;
    signal vsync_o    : sl;
 
@@ -53,31 +57,41 @@ begin
    -----------------------------------------------------------------------------
    uut_HorizontalSync : entity work.VgaSyncFsm
       generic map (
-         TPD_G        => TPD_C,
-         VGA_TIMING_G => VGA_TYPE_C.horizontalTiming
+         TPD_G       => TPD_C,
+         CNT_WIDTH_G => CNT_WIDTH_C
       )
       port map (
-         clk_i     => clk_i,
-         rst_i     => rst_i,
-         inc_i     => hinc_i,
-         inc_o     => hinc_o,
+         clk_i => clk_i,
+         rst_i => rst_i,
+
+         updVga_i    => updVga_i,
+         vgaTiming_i => vgaSettings_i.horizontalTiming,
+
+         cntEn_i => hcntEn_i,
+         cntEn_o => hcntEn_o,
+
          cnt_o     => hcnt_o,
          visible_o => hvisible_o,
          sync_o    => hsync_o
       );
 
-   vinc_i <= hinc_o;
+   vcntEn_i <= hcntEn_o;
 
    uut_VerticlaSync : entity work.VgaSyncFsm
       generic map (
-         TPD_G        => TPD_C,
-         VGA_TIMING_G => VGA_TYPE_C.verticalTiming
+         TPD_G       => TPD_C,
+         CNT_WIDTH_G => CNT_WIDTH_C
       )
       port map (
-         clk_i     => clk_i,
-         rst_i     => rst_i,
-         inc_i     => vinc_i,
-         inc_o     => vinc_o,
+         clk_i => clk_i,
+         rst_i => rst_i,
+
+         updVga_i    => updVga_i,
+         vgaTiming_i => vgaSettings_i.horizontalTiming,
+
+         cntEn_i => vcntEn_i,
+         cntEn_o => vcntEn_o,
+
          cnt_o     => vcnt_o,
          visible_o => vvisible_o,
          sync_o    => vsync_o
@@ -103,11 +117,53 @@ begin
    p_Sim : process
    begin
 
-      hinc_i <= '0';
-      wait for 1_000 * T_C;
-      hinc_i <= '1';
+      updVga_i      <= '0';
+      vgaSettings_i <= VESA_640x480_AT_75HZ_C;
+      hcntEn_i      <= '0';
 
-      wait for 10_000_000 * T_C;
+      wait until rst_i = '1';
+      wait until rst_i = '0';
+
+      wait for 10 * T_C;
+      wait for TPD_C;
+
+      updVga_i      <= '1';
+      vgaSettings_i <= VESA_640x480_AT_75HZ_C;
+
+      wait for T_C;
+      wait for TPD_C;
+
+      updVga_i <= '0';
+
+      hcntEn_i <= '0';
+      wait for 1_000 * T_C;
+      hcntEn_i <= '1';
+
+
+      wait until vsync_o = '0';
+      wait until vsync_o = '1';
+
+      wait until vsync_o = '0';
+      wait until vsync_o = '1';
+
+      updVga_i      <= '1';
+      vgaSettings_i <= VESA_640x350_AT_85HZ_C;
+
+      wait for T_C;
+      wait for TPD_C;
+
+      updVga_i <= '0';
+
+
+      wait until vsync_o = '0';
+      wait until vsync_o = '1';
+
+      wait until vsync_o = '0';
+      wait until vsync_o = '1';
+
+      wait until vsync_o = '0';
+      wait until vsync_o = '1';
+
       assert false report "Simulation Passed!" severity failure;
 
    end process p_Sim;
