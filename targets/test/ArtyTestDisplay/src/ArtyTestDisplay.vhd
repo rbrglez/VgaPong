@@ -91,19 +91,14 @@ architecture rtl of ArtyTestDisplay is
 
    signal vgaClk : sl;
 
+   signal vPaddlePos : slv(bitSize(VESA_640x480_AT_75HZ_C.verticalTiming.whole) - 1 downto 0);
+
+   signal vBallPos : slv(bitSize(VESA_640x480_AT_75HZ_C.verticalTiming.whole) - 1 downto 0);
+   signal hBallPos : slv(bitSize(VESA_640x480_AT_75HZ_C.horizontalTiming.whole) - 1 downto 0);
+
    -----------------------------------------------------------------------------
    -- Debug
    -----------------------------------------------------------------------------
-   attribute mark_debug                    : string;
-   attribute mark_debug of clk             : signal is TOP_C;
-   attribute mark_debug of rst             : signal is TOP_C;
-   attribute mark_debug of rstn            : signal is TOP_C;
-   attribute mark_debug of Io_btn          : signal is TOP_C;
-   attribute mark_debug of Io_sw           : signal is TOP_C;
-   attribute mark_debug of Manager_leds    : signal is TOP_C;
-   attribute mark_debug of Io_leds         : signal is TOP_C;
-   attribute mark_debug of Manager_rgbLeds : signal is TOP_C;
-   attribute mark_debug of Io_rgbLeds      : signal is TOP_C;
 
 ---------------------------------------------------------------------------------------------------
 begin
@@ -206,15 +201,70 @@ begin
          VGA_G => VESA_640x480_AT_75HZ_C
       )
       port map (
-         clk_i   => vgaClk,
-         rst_i   => rst,
-         en_i    => '1',
-         hcnt_i  => hcnt,
-         vcnt_i  => vcnt,
+         clk_i => vgaClk,
+         rst_i => rst,
+         en_i  => '1',
+
+         vPaddlePos_i => vPaddlePos,
+
+         vBallPos_i => vBallPos,
+         hBallPos_i => hBallPos,
+
+         hcnt_i => hcnt,
+         vcnt_i => vcnt,
+
          red_o   => red,
          green_o => green,
          blue_o  => blue
       );
+
+
+   p_stupidProc : process(vgaClk)
+      variable cnt_v : unsigned(24 - 1 downto 0) := (others => '0');
+   begin
+
+      if (rising_edge(vgaClk)) then
+         cnt_v := cnt_v + 1;
+         if (cnt_v = 0) then
+
+            if (unsigned(vPaddlePos) > 400) then
+
+               vPaddlePos <= slv(to_unsigned(50,vPaddlePos'length));
+            else
+
+               vPaddlePos <= slv(unsigned(vPaddlePos) + 10);
+            end if;
+
+
+            if (unsigned(vBallPos) > 400) then
+
+               vBallPos <= slv(to_unsigned(50,vBallPos'length));
+            else
+
+               vBallPos <= slv(unsigned(vBallPos) + 10);
+            end if;
+
+
+
+
+
+
+            if (unsigned(hBallPos) > 600) then
+
+               hBallPos <= slv(to_unsigned(50,hBallPos'length));
+            else
+
+               hBallPos <= slv(unsigned(hBallPos) + 15);
+            end if;
+
+
+
+
+         end if;
+      end if;
+
+
+   end process p_stupidProc;
 
    ja(3 downto 0) <= red;
    ja(7 downto 4) <= blue;
