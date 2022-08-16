@@ -39,7 +39,7 @@ end VgaSyncCtrl;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of VgaSyncCtrl is
 
-   signal h2vInc : sl;
+   signal h2vCntEn : sl;
 
 ---------------------------------------------------------------------------------------------------
 begin
@@ -52,8 +52,8 @@ begin
       port map (
          clk_i     => clk_i,
          rst_i     => rst_i,
-         inc_i     => en_i,
-         inc_o     => h2vInc,
+         cntEn_i   => en_i,
+         cntEn_o   => h2vCntEn,
          cnt_o     => hcnt_o,
          visible_o => hvisible_o,
          sync_o    => hsync_o
@@ -67,8 +67,8 @@ begin
       port map (
          clk_i     => clk_i,
          rst_i     => rst_i,
-         inc_i     => h2vInc,
-         inc_o     => open,
+         cntEn_i   => h2vCntEn,
+         cntEn_o   => open,
          cnt_o     => vcnt_o,
          visible_o => vvisible_o,
          sync_o    => vsync_o

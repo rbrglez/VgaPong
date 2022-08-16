@@ -26,8 +26,8 @@ entity VgaSyncFsm is
       clk_i : in sl;
       rst_i : in sl;
 
-      inc_i : in  sl;
-      inc_o : out sl;
+      cntEn_i : in  sl;
+      cntEn_o : out sl;
 
       cnt_o     : out slv(bitsize(VGA_TIMING_G.whole) - 1 downto 0);
       visible_o : out sl;
@@ -46,25 +46,19 @@ architecture rtl of VgaSyncFsm is
       );
 
    type RegType is record
-      cnt : unsigned(bitSize(VGA_TIMING_G.whole) - 1 downto 0);
-      --
-      sync : sl;
-      --
-      incOut : sl;
-      --
-      visible : sl;
+      cnt      : unsigned(bitSize(VGA_TIMING_G.whole) - 1 downto 0);
+      sync     : sl;
+      cntEnOut : sl;
+      visible  : sl;
       --
       state : StateType;
    end record RegType;
 
    constant REG_INIT_C : RegType := (
-         cnt => (others => '0'),
-         --
-         sync => '1',
-         --
-         incOut => '0',
-         --
-         visible => '0',
+         cnt      => (others => '0'),
+         sync     => '1',
+         cntEnOut => '0',
+         visible  => '0',
          --
          state => VISIBLE_S
       );
@@ -84,10 +78,10 @@ begin
       -- Latch the current value
       v := r;
 
-      v.incOut := '0';
+      v.cntEnOut := '0';
 
-      -- NOTE: state machine is active if inc_i port is high
-      if (inc_i = '1') then
+      -- NOTE: state machine is active if cntEn_i port is high
+      if (cntEn_i = '1') then
 
          v.cnt := r.cnt + 1;
 
@@ -141,11 +135,11 @@ begin
                      VGA_TIMING_G.syncPulse +
                      VGA_TIMING_G.backPorch - 1
                   ) then
-                  v.visible := '1';
-                  v.cnt     := to_unsigned(0, r.cnt'length);
-                  v.sync    := '1';
-                  v.state   := VISIBLE_S;
-                  v.incOut  := '1';
+                  v.visible  := '1';
+                  v.cnt      := to_unsigned(0, r.cnt'length);
+                  v.sync     := '1';
+                  v.state    := VISIBLE_S;
+                  v.cntEnOut := '1';
 
                end if;
 
@@ -169,7 +163,7 @@ begin
       sync_o    <= r.sync;
       cnt_o     <= slv(r.cnt);
       visible_o <= r.visible;
-      inc_o     <= r.incOut;
+      cntEn_o   <= r.cntEnOut;
 
    end process p_Comb;
 
