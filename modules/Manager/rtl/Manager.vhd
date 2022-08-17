@@ -23,17 +23,19 @@ entity Manager is
       clk_i : in sl;
       rst_i : in sl;
 
-      leds_o    : out slv(4-1 downto 0);
-      rgbLeds_o : out slv(12-1 downto 0);
+      btns_i   : in slv(4 - 1 downto 0);
+      switch_i : in slv(4 - 1 downto 0);
 
-      btns_i   : in slv(4-1 downto 0);
-      switch_i : in slv(4-1 downto 0)
+      leds_o      : out slv(4 - 1 downto 0);
+      redLeds_o   : out slv(4 - 1 downto 0);
+      greenLeds_o : out slv(4 - 1 downto 0);
+      blueLeds_o  : out slv(4 - 1 downto 0)
    );
 end Manager;
 ---------------------------------------------------------------------------------------------------
 architecture rtl of Manager is
 
-   signal enRgbLeds : slv(4-1 downto 0);
+   signal btnsState : slv(btns_i'range);
 
 ---------------------------------------------------------------------------------------------------
 begin
@@ -48,13 +50,12 @@ begin
          clk_i       => clk_i,
          rst_i       => rst_i,
          btns_i      => btns_i,
-         btnsState_o => enRgbLeds
+         btnsState_o => btnsState
       );
 
-   rgbLeds_o(2 downto 0)  <= (others => enRgbLeds(0));
-   rgbLeds_o(5 downto 3)  <= (others => enRgbLeds(1));
-   rgbLeds_o(8 downto 6)  <= (others => enRgbLeds(2));
-   rgbLeds_o(11 downto 9) <= (others => enRgbLeds(3));
+   redLeds_o   <= btnsState;
+   greenLeds_o <= not(btnsState);
+   blueLeds_o  <= btnsState;
 
    -- enable leds with switch
    leds_o <= switch_i;
