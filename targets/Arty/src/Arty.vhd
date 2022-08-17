@@ -62,9 +62,13 @@ architecture rtl of Arty is
 
    signal Manager_rgbLeds : slv(12 - 1 downto 0);
 
-   signal redLeds   : slv(4 - 1 downto 0);
-   signal greenLeds : slv(4 - 1 downto 0);
-   signal blueLeds  : slv(4 - 1 downto 0);
+   signal Manager_redLeds   : slv(4 - 1 downto 0);
+   signal Manager_greenLeds : slv(4 - 1 downto 0);
+   signal Manager_blueLeds  : slv(4 - 1 downto 0);
+
+   signal ArtyBoardIo_redLeds   : slv(4 - 1 downto 0);
+   signal ArtyBoardIo_greenLeds : slv(4 - 1 downto 0);
+   signal ArtyBoardIo_blueLeds  : slv(4 - 1 downto 0);
 
    signal clk  : sl;
    signal rst  : sl;
@@ -89,12 +93,16 @@ begin
          TPD_G => TPD_G
       )
       port map (
-         clk_i     => clk,
-         rst_i     => rst,
-         leds_o    => Manager_leds,
-         rgbLeds_o => Manager_rgbLeds,
-         btns_i    => ArtyBoardIo_btn,
-         switch_i  => ArtyBoardIo_sw
+         clk_i => clk,
+         rst_i => rst,
+
+         btns_i   => ArtyBoardIo_btn,
+         switch_i => ArtyBoardIo_sw,
+
+         leds_o      => Manager_leds,
+         redLeds_o   => Manager_redLeds,
+         greenLeds_o => Manager_greenLeds,
+         blueLeds_o  => Manager_blueLeds
       );
 
 
@@ -110,9 +118,9 @@ begin
 
          -- FW inputs
          fwLeds_i      => Manager_leds,
-         fwRedLeds_i   => Manager_rgbLeds(4 - 1 downto 0),
-         fwGreenLeds_i => Manager_rgbLeds(8 - 1 downto 4),
-         fwBlueLeds_i  => Manager_rgbLeds(12 - 1 downto 8),
+         fwRedLeds_i   => Manager_redLeds,
+         fwGreenLeds_i => Manager_greenLeds,
+         fwBlueLeds_i  => Manager_blueLeds,
          fwJa_i        => (others => '0'),
          fwJb_i        => (others => '0'),
          fwJc_i        => (others => '0'),
@@ -120,9 +128,9 @@ begin
 
          -- HW outputs
          hwLeds_o      => led,
-         hwRedLeds_o   => redLeds,
-         hwGreenLeds_o => greenLeds,
-         hwBlueLeds_o  => blueLeds,
+         hwRedLeds_o   => ArtyBoardIo_redLeds,
+         hwGreenLeds_o => ArtyBoardIo_greenLeds,
+         hwBlueLeds_o  => ArtyBoardIo_blueLeds,
          hwJa_o        => open,
          hwJb_o        => open,
          hwJc_o        => open,
@@ -137,21 +145,21 @@ begin
          fwBtns_o   => ArtyBoardIo_btn
       );
 
-   led3_r <= redLeds(3);
-   led3_g <= greenLeds(3);
-   led3_b <= blueLeds(3);
+   led3_r <= ArtyBoardIo_redLeds(3);
+   led3_g <= ArtyBoardIo_greenLeds(3);
+   led3_b <= ArtyBoardIo_blueLeds(3);
 
-   led2_r <= redLeds(2);
-   led2_g <= greenLeds(2);
-   led2_b <= blueLeds(2);
+   led2_r <= ArtyBoardIo_redLeds(2);
+   led2_g <= ArtyBoardIo_greenLeds(2);
+   led2_b <= ArtyBoardIo_blueLeds(2);
 
-   led1_r <= redLeds(1);
-   led1_g <= greenLeds(1);
-   led1_b <= blueLeds(1);
+   led1_r <= ArtyBoardIo_redLeds(1);
+   led1_g <= ArtyBoardIo_greenLeds(1);
+   led1_b <= ArtyBoardIo_blueLeds(1);
 
-   led0_r <= redLeds(0);
-   led0_g <= greenLeds(0);
-   led0_b <= blueLeds(0);
+   led0_r <= ArtyBoardIo_redLeds(0);
+   led0_g <= ArtyBoardIo_greenLeds(0);
+   led0_b <= ArtyBoardIo_blueLeds(0);
 
 end rtl;
 ---------------------------------------------------------------------------------------------------
