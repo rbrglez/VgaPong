@@ -55,29 +55,20 @@ end Arty;
 ---------------------------------------------------------------------------------------------------    
 architecture rtl of Arty is
 
-   signal Manager_rgbLeds : slv(12 - 1 downto 0);
-   signal Io_rgbLeds      : slv(12 - 1 downto 0);
-
    signal Manager_leds : slv(led'range);
-   signal Io_leds      : slv(led'range);
 
-   signal Io_btn : slv(btn'range);
-   signal Io_sw  : slv(sw'range);
+   signal ArtyBoardIo_btn : slv(btn'range);
+   signal ArtyBoardIo_sw  : slv(sw'range);
+
+   signal Manager_rgbLeds : slv(12 - 1 downto 0);
+
+   signal redLeds   : slv(4 - 1 downto 0);
+   signal greenLeds : slv(4 - 1 downto 0);
+   signal blueLeds  : slv(4 - 1 downto 0);
 
    signal clk  : sl;
    signal rst  : sl;
    signal rstn : sl;
-
-   attribute mark_debug                    : string;
-   attribute mark_debug of clk             : signal is TOP_C;
-   attribute mark_debug of rst             : signal is TOP_C;
-   attribute mark_debug of rstn            : signal is TOP_C;
-   attribute mark_debug of Io_btn          : signal is TOP_C;
-   attribute mark_debug of Io_sw           : signal is TOP_C;
-   attribute mark_debug of Manager_leds    : signal is TOP_C;
-   attribute mark_debug of Io_leds         : signal is TOP_C;
-   attribute mark_debug of Manager_rgbLeds : signal is TOP_C;
-   attribute mark_debug of Io_rgbLeds      : signal is TOP_C;
 
 ---------------------------------------------------------------------------------------------------
 begin
@@ -102,45 +93,65 @@ begin
          rst_i     => rst,
          leds_o    => Manager_leds,
          rgbLeds_o => Manager_rgbLeds,
-         btns_i    => Io_btn,
-         switch_i  => Io_sw
+         btns_i    => ArtyBoardIo_btn,
+         switch_i  => ArtyBoardIo_sw
       );
 
-   u_Io : entity work.Io
+
+   u_ArtyBoardIo : entity work.ArtyBoardIo
       generic map (
-         TPD_G           => TPD_G,
-         DEBOUNCE_TIME_G => DEBOUNCE_TIME_G
+         TPD_G             => TPD_G,
+         CLK_FREQ_G        => 100.0E+6,
+         DEBOUNCE_PERIOD_G => 50.0E-3
       )
       port map (
-         clk_i     => clk,
-         rst_i     => rst,
-         rgbLeds_o => Io_rgbLeds,
-         rgbLeds_i => Manager_rgbLeds,
-         leds_o    => Io_leds,
-         leds_i    => Manager_leds,
-         switch_i  => sw,
-         switch_o  => Io_sw,
-         btns_i    => btn,
-         btns_o    => Io_btn
+         clk_i => clk,
+         rst_i => rst,
+
+         -- FW inputs
+         fwLeds_i      => Manager_leds,
+         fwRedLeds_i   => Manager_rgbLeds(4 - 1 downto 0),
+         fwGreenLeds_i => Manager_rgbLeds(8 - 1 downto 4),
+         fwBlueLeds_i  => Manager_rgbLeds(12 - 1 downto 8),
+         fwJa_i        => (others => '0'),
+         fwJb_i        => (others => '0'),
+         fwJc_i        => (others => '0'),
+         fwJd_i        => (others => '0'),
+
+         -- HW outputs
+         hwLeds_o      => led,
+         hwRedLeds_o   => redLeds,
+         hwGreenLeds_o => greenLeds,
+         hwBlueLeds_o  => blueLeds,
+         hwJa_o        => open,
+         hwJb_o        => open,
+         hwJc_o        => open,
+         hwJd_o        => open,
+
+         -- HW inputs
+         hwSwitch_i => sw,
+         hwBtns_i   => btn,
+
+         -- FW outputs
+         fwSwitch_o => ArtyBoardIo_sw,
+         fwBtns_o   => ArtyBoardIo_btn
       );
 
-   led3_r <= Io_rgbLeds(11);
-   led3_g <= Io_rgbLeds(10);
-   led3_b <= Io_rgbLeds(9);
+   led3_r <= redLeds(3);
+   led3_g <= greenLeds(3);
+   led3_b <= blueLeds(3);
 
-   led2_r <= Io_rgbLeds(8);
-   led2_g <= Io_rgbLeds(7);
-   led2_b <= Io_rgbLeds(6);
+   led2_r <= redLeds(2);
+   led2_g <= greenLeds(2);
+   led2_b <= blueLeds(2);
 
-   led1_r <= Io_rgbLeds(5);
-   led1_g <= Io_rgbLeds(4);
-   led1_b <= Io_rgbLeds(3);
+   led1_r <= redLeds(1);
+   led1_g <= greenLeds(1);
+   led1_b <= blueLeds(1);
 
-   led0_r <= Io_rgbLeds(2);
-   led0_g <= Io_rgbLeds(1);
-   led0_b <= Io_rgbLeds(0);
-
-   led <= Io_leds;
+   led0_r <= redLeds(0);
+   led0_g <= greenLeds(0);
+   led0_b <= blueLeds(0);
 
 end rtl;
 ---------------------------------------------------------------------------------------------------
