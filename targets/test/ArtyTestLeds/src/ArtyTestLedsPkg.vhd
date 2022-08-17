@@ -4,7 +4,7 @@
 --!
 --! @author 
 --!
---! @file ArtyPkg.vhd
+--! @file ArtyTestLedsPkg.vhd
 --!
 ---------------------------------------------------------------------------------------------------
 
@@ -16,7 +16,7 @@ library surf;
 use surf.StdRtlPkg.all;
 
 
-package ArtyPkg is
+package ArtyTestLedsPkg is
 
    -- period = Fclk/Fpwm
    constant LEDS_PERIOD_C      : positive := 10_000; -- 10kHz @ Fclk=100MHz 
@@ -32,8 +32,8 @@ package ArtyPkg is
    constant RGB_LEDS_PERIOD_SLV_C : slv(RGB_LEDS_PERIOD_SIZE_C-1 downto 0) :=
       toSlv(RGB_LEDS_PERIOD_C,RGB_LEDS_PERIOD_SIZE_C);
 
-end ArtyPkg;
+end ArtyTestLedsPkg;
 
-package body ArtyPkg is
+package body ArtyTestLedsPkg is
 
-end package body ArtyPkg;
+end package body ArtyTestLedsPkg;
