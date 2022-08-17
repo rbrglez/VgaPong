@@ -45,16 +45,16 @@ entity ArtyBoardIo is
       --------------------------------------------------------------------------
       -- Outputs to hardware (sync)
       --------------------------------------------------------------------------
-      hwLeds_o : in slv(4 - 1 downto 0);
+      hwLeds_o : out slv(4 - 1 downto 0);
 
-      hwRedLeds_o   : in slv(4 - 1 downto 0);
-      hwGreenLeds_o : in slv(4 - 1 downto 0);
-      hwBlueLeds_o  : in Slv(4 - 1 downto 0);
+      hwRedLeds_o   : out slv(4 - 1 downto 0);
+      hwGreenLeds_o : out slv(4 - 1 downto 0);
+      hwBlueLeds_o  : out Slv(4 - 1 downto 0);
 
-      hwJa_o : in slv(8 - 1 downto 0);
-      hwJb_o : in slv(8 - 1 downto 0);
-      hwJc_o : in slv(8 - 1 downto 0);
-      hwJd_o : in slv(8 - 1 downto 0);
+      hwJa_o : out slv(8 - 1 downto 0);
+      hwJb_o : out slv(8 - 1 downto 0);
+      hwJc_o : out slv(8 - 1 downto 0);
+      hwJd_o : out slv(8 - 1 downto 0);
 
       --------------------------------------------------------------------------
       -- Inputs from hardware
